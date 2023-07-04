@@ -1,0 +1,42 @@
+name: Trigger auto deployment for container-apps-ramin
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '**'
+    - '.github/workflows/container-apps-ramin-AutoDeployTrigger-00732937-c01c-4185-b325-8ed81ae88790.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.CONTAINERAPPSRAMIN_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: raminacr.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPSRAMIN_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPSRAMIN_REGISTRY_PASSWORD }}
+          containerAppName: container-apps-ramin
+          resourceGroup: ramin-playground
+          imageToBuild: raminacr.azurecr.io/demomodule:${{ github.sha }}
+          
+
+     
+
